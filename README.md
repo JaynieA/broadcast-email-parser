@@ -4,7 +4,7 @@ Parses emails received hourly and enters information from them into a database.
 
 ##Requirements
 
-* File named connection.py in root folder, containing:
+* Additional file named connection.py located in root folder, containing:
 
 ```
 EMAIL_ACCOUNT = "your email at gmail dot com"
@@ -15,6 +15,8 @@ connStr = r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=yourDatabaseNa
 ```
 
 * Existing Database in Microsoft Access
+* Enable IMAP in Gmail settings
+* Allow access for less secure apps in Gmail settings
 
 ##Technologies
 
