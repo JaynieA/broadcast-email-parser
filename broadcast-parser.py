@@ -26,16 +26,26 @@ def emailLogin(account, password):
     #display success info on login
     print(rv, data)
 
-def get_data(msg, data):
-    #print(msg)
-    getEmailBody(msg, data)
+def parseMessage(msg, data):
+    #Parse data from the email message
+    body = getEmailBody(msg, data)
+    #Date and Time message was sent
+    sendDateTime = getDateTimeInfo(body)
+    sendDate = sendDateTime[0]
+    sendTime = sendDateTime[1]
+    print('Date Sent: %s\nTime Sent: %s\n' % (sendDate, sendTime))
 
-def getEmailBody(msg, data):
-    body = email.message_from_bytes(data[0][1]).get_payload()
-    getSendTime(body)
+    searchInfo = getSearchInfo(body)
+    print(searchInfo.split('\r\n\r\n')[0])
     #print(body)
 
-def getSendTime(body):
+def getSearchInfo(body):
+    #Use regex to get the main info block containing search info from the email body
+    regex = r'(?<=and Their Contact Info.)(.*)(?=To turn this feature off)'
+    match = re.findall(regex, body, re.DOTALL)[0].strip()
+    return match
+
+def getDateTimeInfo(body):
     #Use regex to get the date/time the original message was sent
     regex = r"(?<=Sent: )(.*)(?=To:)"
     match = re.findall(regex, body, re.DOTALL)[0].strip()
@@ -44,8 +54,10 @@ def getSendTime(body):
     #parse into separate date and time variables
     sendDate = time.strftime('%m-%d-%Y', match)
     sendTime = time.strftime('%H:%M %p', match)
-    print('Date Sent: %s\nTime Sent: %s\n' % (sendDate, sendTime))
+    return [sendDate, sendTime]
 
+def getEmailBody(msg, data):
+    return email.message_from_bytes(data[0][1]).get_payload()
 
 def getMessages():
     rv, data = M.search(None, 'ALL')
@@ -65,8 +77,8 @@ def getMessages():
         #Initialize msg as raw email message
         msg = email.message_from_bytes(data[0][1])
         #Display current email count, get data from emails
-        print('Email #%s' % email_count)
-        get_data(msg, data)
+        print('\nEmail #%s' % email_count)
+        parseMessage(msg, data)
         #Increment email counter
         email_count += 1
 
@@ -82,8 +94,6 @@ def selectMailbox(folder):
     else:
         #Display the error
         print('ERROR. Unable to open %s, %s' % (folder, rv))
-
-
 
 
 #initialize app
