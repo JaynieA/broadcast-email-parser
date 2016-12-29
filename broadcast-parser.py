@@ -35,14 +35,23 @@ def parseMessage(msg, data):
     sendTime = sendDateTime[1]
     print('Date Sent: %s\nTime Sent: %s\n' % (sendDate, sendTime))
 
+    #separate search info from the rest of the body
     searchInfo = getSearchInfo(body)
-    print(searchInfo.split('\r\n\r\n')[0])
-    #print(body)
+
+    #TODO: put the following in its own function
+    #get individual searches to parse through
+    searches = searchInfo.split('\r\n\r\n')
+    for search in searches:
+        print(search,'~~~\n')
+    ##print(body)
 
 def getSearchInfo(body):
     #Use regex to get the main info block containing search info from the email body
     regex = r'(?<=and Their Contact Info.)(.*)(?=To turn this feature off)'
     match = re.findall(regex, body, re.DOTALL)[0].strip()
+    #get rid of all lines that start and end with '---''
+    regex = r'(\---(.*?)\---)'
+    match = re.sub(regex, '', match)
     return match
 
 def getDateTimeInfo(body):
