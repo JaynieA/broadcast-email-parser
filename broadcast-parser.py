@@ -38,12 +38,32 @@ def parseMessage(msg, data):
     #separate search info from the rest of the body
     searchInfo = getSearchInfo(body)
 
-    #TODO: put the following in its own function
-    #get individual searches to parse through
-    searches = searchInfo.split('\r\n\r\n')
-    for search in searches:
-        print(search,'~~~\n')
+    #TODO: extract the following into it's own function
+    #Get individual part searches to parse through
+    partSearches = splitPartSearches(searchInfo)
+    #For each part search...
+    for partSearch in partSearches:
+        #print(partSearch,'~~~\n')
+
+        #Get the part number for the part search
+        part_num = getPart(partSearch)
+        print('Part:', part_num)
+
+        #Get rid of blank lines in partSearch string
+        partSearch = partSearch.strip()
+
+        #Discard the first line in partSearch to end up with just the searches
+        searchesOnly = partSearch.replace(partSearch.split('\r\n')[0], '')
+        print(searchesOnly)
+
+        #Split searchesOnly
+
+
     ##print(body)
+
+def getPart(search):
+    #Part = everything before first comma, formatted without returns and newlines
+    return search.split(',')[0].replace('\r\n', '')
 
 def getSearchInfo(body):
     #Use regex to get the main info block containing search info from the email body
@@ -104,6 +124,9 @@ def selectMailbox(folder):
         #Display the error
         print('ERROR. Unable to open %s, %s' % (folder, rv))
 
+def splitPartSearches(searchList):
+    #split into individual part searches
+    return searchList.split('\r\n\r\n')
 
 #initialize app
 init()
