@@ -38,7 +38,7 @@ def parseMessage(msg, data):
     #Separate search info from the rest of the body
     searchInfo = getSearchInfo(body)
 
-    #TODO: extract the following into it's own function
+    #TODO: extract the following into it's own function (getDataFromSearches)
     #Get individual part searches to parse through
     partSearches = splitPartSearches(searchInfo)
     #For each part searched...
@@ -50,25 +50,32 @@ def parseMessage(msg, data):
 
         #TODO: extract into parseIndividualSearches function
         #Parse through eachSearch by line
-        print('\nPart Search:', part_num)
-        counter = 1
-        numSearchesPerPart = len(eachSearch)/2
-        print(numSearchesPerPart)
+        print('\nPART:', part_num)
+        lineCounter = 1
         for line in eachSearch:
-            print(counter)
             #If the line is an odd number (the first line in an individual search),
             #get the part searched and company named
-            if (counter % 2 != 0):
+            if (lineCounter % 2 != 0):
                 part_searched = getPartSearched(line)
                 company_name = getCompanyName(line)
-                print('*Part searched: %s\n*CompanyName: %s' % (part_searched, company_name))
+                #TODO: get company short name (or Misc_Reseller based on company_name from db)
             #Else, if the number is even (second line of individual search),
             #get the name of the person
-            elif (counter % 2 == 0):
+            elif (lineCounter % 2 == 0):
                 person_name = getPersonName(line)
-                print('*Person Name:',person_name, '\n')
-            #Increment the counter
-            counter += 1
+                #split into first and last names
+                if (person_name != 'N/A'):
+                    person_first_name = person_name.split(' ')[0]
+                    person_last_name = person_name.split(' ')[1]
+                #set first and last names to blank string if name is 'N/A'
+                else:
+                    person_first_name = ''
+                    person_last_name = ''
+            #Print all info after search has been parsed (every 2 lines)
+            if (lineCounter % 2 == 0):
+                print('Part searched: %s\nCompany Name: %s\nPerson First Name: %s\nPerson Last Name: %s\n' % (part_searched, company_name, person_first_name, person_last_name))
+            #Increment the lineCounter
+            lineCounter += 1
 
 def getCompanyName(line):
     return line.split(':')[1].strip()
