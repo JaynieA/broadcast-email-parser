@@ -41,22 +41,38 @@ def parseMessage(msg, data):
     #TODO: extract the following into it's own function
     #Get individual part searches to parse through
     partSearches = splitPartSearches(searchInfo)
-    #For each part search...
+    #For each part searched...
     for partSearch in partSearches:
         #print(partSearch,'~~~\n')
 
-        #Get the part number for the part search
+        #Get the part number for the part searched
         part_num = getPart(partSearch)
-        print('Part:', part_num)
+        #print('Part:', part_num)
 
         #Get rid of blank lines in partSearch string
         partSearch = partSearch.strip()
 
         #Discard the first line in partSearch to end up with just the searches
-        searchesOnly = partSearch.replace(partSearch.split('\r\n')[0], '')
-        print(searchesOnly)
+        searchesOnly = partSearch.replace(partSearch.split('\r\n')[0], '').strip()
+        #print('\n',searchesOnly)
 
-        #Split searchesOnly
+        #Split a list of the searchesOnly string
+        soloSearchList = searchesOnly.split('\n')
+        
+        #Parse through soloSearchList by line
+        print('\nPart Search:')
+        counter = 1
+        for line in soloSearchList:
+            #if the line is an odd number (the first line in an individual search),
+            #get the part searched and company named
+            if (counter % 2 != 0):
+                print('Odd:', line)
+            #else, if the number is even (second line of individual search),
+            #
+            elif (counter % 2 == 0):
+                print('Even:', line)
+            #increment the counter
+            counter += 1
 
 
     ##print(body)
