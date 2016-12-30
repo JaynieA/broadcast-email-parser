@@ -26,88 +26,11 @@ def emailLogin(account, password):
     #display success info on login
     print(rv, data)
 
-def parseMessage(msg, data):
-    #Parse data from the email message
-    body = getEmailBody(msg, data)
-    #Date and Time message was sent
-    sendDateTime = getDateTimeInfo(body)
-    sendDate = sendDateTime[0]
-    sendTime = sendDateTime[1]
-    print('Date Sent: %s\nTime Sent: %s\n' % (sendDate, sendTime))
-
-    #Separate search info from the rest of the body
-    searchInfo = getSearchInfo(body)
-
-    #TODO: extract the following into it's own function (getDataFromSearches)
-    #Get individual part searches to parse through
-    partSearches = splitPartSearches(searchInfo)
-    #For each part searched...
-    for partSearch in partSearches:
-        #Get the part number for the part searched
-        part_num = getPart(partSearch)
-        #Get a split list of each individual search done
-        eachSearch = getIndividualSearchesList(partSearch)
-
-        #TODO: extract into parseIndividualSearches function
-        #Parse through eachSearch by line
-        print('\nPART:', part_num)
-        lineCounter = 1
-        for line in eachSearch:
-            #If the line is an odd number (the first line in an individual search),
-            #get the part searched and company named
-            if (lineCounter % 2 != 0):
-                part_searched = getPartSearched(line)
-                company_name = getCompanyName(line)
-                #TODO: get company short name (or Misc_Reseller based on company_name from db)
-            #Else, if the number is even (second line of individual search),
-            #get the name of the person
-            elif (lineCounter % 2 == 0):
-                person_name = getPersonName(line)
-                #split into first and last names
-                if (person_name != 'N/A'):
-                    person_first_name = person_name.split(' ')[0]
-                    person_last_name = person_name.split(' ')[1]
-                #set first and last names to blank string if name is 'N/A'
-                else:
-                    person_first_name = ''
-                    person_last_name = ''
-            #Print all info after search has been parsed (every 2 lines)
-            if (lineCounter % 2 == 0):
-                print('Part searched: %s\nCompany Name: %s\nPerson First Name: %s\nPerson Last Name: %s\n' % (part_searched, company_name, person_first_name, person_last_name))
-            #Increment the lineCounter
-            lineCounter += 1
-
 def getCompanyName(line):
-    return line.split(':')[1].strip()
-
-def getIndividualSearchesList(partSearchString):
-    #Get rid of blank lines in partSearch string
-    partSearchString = partSearchString.strip()
-    #Discard the first line in partSearch to end up with just the searches done
-    searchString = partSearchString.replace(partSearchString.split('\r\n')[0], '').strip()
-    #Split the searchString into a list and return it
-    return searchString.split('\n')
-
-def getPart(search):
-    #Part = everything before first comma, formatted without returns and newlines
-    return search.split(',')[0].replace('\r\n', '')
-
-def getPartSearched(line):
-    regex = r'^.*?(?= Searched by:)'
-    return re.findall(regex, line, re.DOTALL)[0]
-
-def getPersonName(line):
-    regex = r'^.*?(?= P:)'
-    return re.findall(regex, line, re.DOTALL)[0].strip()
-
-def getSearchInfo(body):
-    #Use regex to get the main info block containing search info from the email body
-    regex = r'(?<=and Their Contact Info.)(.*)(?=To turn this feature off)'
-    match = re.findall(regex, body, re.DOTALL)[0].strip()
-    #get rid of all lines that start and end with '---''
-    regex = r'(\---(.*?)\---)'
-    match = re.sub(regex, '', match)
-    return match
+    try:
+        return line.split(':')[1].strip()
+    except IndexError:
+        return ''
 
 def getDateTimeInfo(body):
     #Use regex to get the date/time the original message was sent
@@ -122,6 +45,14 @@ def getDateTimeInfo(body):
 
 def getEmailBody(msg, data):
     return email.message_from_bytes(data[0][1]).get_payload()
+
+def getIndividualSearchesList(partSearchString):
+    #Get rid of blank lines in partSearch string
+    partSearchString = partSearchString.strip()
+    #Discard the first line in partSearch to end up with just the searches done
+    searchString = partSearchString.replace(partSearchString.split('\r\n')[0], '').strip()
+    #Split the searchString into a list and return it
+    return searchString.split('\n')
 
 def getMessages():
     rv, data = M.search(None, 'ALL')
@@ -145,6 +76,88 @@ def getMessages():
         parseMessage(msg, data)
         #Increment email counter
         email_count += 1
+
+def getPersonName(line):
+    regex = r'^.*?(?= P:)'
+    return re.findall(regex, line, re.DOTALL)[0].strip()
+
+def getPart(search):
+    #Part = everything before first comma, formatted without returns and newlines
+    return search.split(',')[0].replace('\r\n', '')
+
+def getPartSearched(line):
+    try:
+        regex = r'^.*?(?= Searched by:)'
+        return re.findall(regex, line, re.DOTALL)[0]
+    except IndexError:
+        return ''
+
+def getSearchInfo(body):
+    #Use regex to get the main info block containing search info from the email body
+    regex = r'(?<=and Their Contact Info.)(.*)(?=To turn this feature off)'
+    match = re.findall(regex, body, re.DOTALL)[0].strip()
+    #get rid of all lines that start and end with '---''
+    regex = r'(\---(.*?)\---)'
+    match = re.sub(regex, '', match)
+    return match
+
+def parseMessage(msg, data):
+    #Parse data from the email message
+    body = getEmailBody(msg, data)
+    #Date and Time message was sent
+    sendDateTime = getDateTimeInfo(body)
+    sendDate = sendDateTime[0]
+    sendTime = sendDateTime[1]
+    print('Date Sent: %s\nTime Sent: %s\n' % (sendDate, sendTime))
+    #Separate search info from the rest of the body
+    searchInfo = getSearchInfo(body)
+
+    #TODO: extract the following into it's own function (getDataFromSearches)
+    #Get individual part searches to parse through
+    partSearches = splitPartSearches(searchInfo)
+    #For each part searched...
+    for partSearch in partSearches:
+        #Get the part number for the part searched
+        part_num = getPart(partSearch)
+        #Get a split list of each individual search done
+        eachSearch = getIndividualSearchesList(partSearch)
+
+        #TODO: make sure query is added to below function (and list) before moving on
+        #Parse through each search by line and return a list of lists of results
+        #Format of results lists is: [part_searched, company_name, person_first_name, person_last_name]
+        completeSearchInfoList = parseIndividualSearches(eachSearch)
+        print(completeSearchInfoList)
+
+def parseIndividualSearches(eachSearch):
+    #Parse through eachSearch by line
+    completeSearchInfo = []
+    lineCounter = 1
+    for line in eachSearch:
+        #If the line is an odd number (the first line in an individual search),
+        #get the part searched and company named
+        if (lineCounter % 2 != 0):
+            part_searched = getPartSearched(line)
+            company_name = getCompanyName(line)
+            #TODO: get company short name (or Misc_Reseller based on company_name from db)
+            #TODO: add the above to the list appended to completeSearchInfo and returned
+        #Else, if the number is even (second line of individual search),
+        #get the name of the person
+        elif (lineCounter % 2 == 0):
+            person_name = getPersonName(line)
+            #split into first and last names
+            if (person_name != 'N/A'):
+                person_first_name = person_name.split(' ')[0]
+                person_last_name = person_name.split(' ')[1]
+            #set first and last names to blank string if name is 'N/A'
+            else:
+                person_first_name = ''
+                person_last_name = ''
+        #Print all info after search has been parsed (every 2 lines)
+        if (lineCounter % 2 == 0):
+            completeSearchInfo.append([part_searched, company_name, person_first_name, person_last_name])
+        #Increment the lineCounter
+        lineCounter += 1
+    return completeSearchInfo
 
 def selectMailbox(folder):
     #Select mailbox folder, mark new messages as read
