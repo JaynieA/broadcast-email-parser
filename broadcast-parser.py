@@ -54,31 +54,32 @@ def parseMessage(msg, data):
         searchesOnly = partSearch.replace(partSearch.split('\r\n')[0], '').strip()
         #print('\n',searchesOnly)
 
-        #TODO: extract into getSoloSearche function
+        #TODO: extract into getSoloSearch function
         #Split a list of the searchesOnly string
         soloSearchList = searchesOnly.split('\n')
         #TODO: extract into parseSoloSearch function
         #Parse through soloSearchList by line
-        print('\nPart Search:')
+        print('\nPart Search:', part_num)
         counter = 1
         for line in soloSearchList:
             #if the line is an odd number (the first line in an individual search),
             #get the part searched and company named
             if (counter % 2 != 0):
-                print('Odd:', line)
-                searched_regex = r'^.*?(?= Searched by:)'
-                part_searched = re.findall(searched_regex, line, re.DOTALL)[0]
-                print('*Part searched: %s' % (part_searched))
-                #match = re.findall(regex, body, re.DOTALL)[0].strip()
+                #TODO: extract the following into getSearchedAndCompanyName function
+                regex = r'^.*?(?= Searched by:)'
+                part_searched = re.findall(regex, line, re.DOTALL)[0]
+                company_name = line.split(':')[1].strip()
+                print('*Part searched: %s\n*CompanyName: %s' % (part_searched, company_name))
+
             #else, if the number is even (second line of individual search),
-            #
+            #get the name of the person
             elif (counter % 2 == 0):
-                print('Even:', line)
+                #TODO: extract the following into getPersonName function
+                regex = r'^.*?(?= P:)'
+                person_name = re.findall(regex, line, re.DOTALL)[0].strip()
+                print('*Person Name:',person_name, '\n')
             #increment the counter
             counter += 1
-
-
-    ##print(body)
 
 def getPart(search):
     #Part = everything before first comma, formatted without returns and newlines
