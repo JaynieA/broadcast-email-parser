@@ -35,7 +35,7 @@ def parseMessage(msg, data):
     sendTime = sendDateTime[1]
     print('Date Sent: %s\nTime Sent: %s\n' % (sendDate, sendTime))
 
-    #separate search info from the rest of the body
+    #Separate search info from the rest of the body
     searchInfo = getSearchInfo(body)
 
     #TODO: extract the following into it's own function
@@ -45,45 +45,53 @@ def parseMessage(msg, data):
     for partSearch in partSearches:
         #Get the part number for the part searched
         part_num = getPart(partSearch)
-        #print('Part:', part_num)
+        #Get a split list of each individual search done
+        eachSearch = getIndividualSearchesList(partSearch)
 
-        #TODO: extract into getPartSearch function
-        #Get rid of blank lines in partSearch string
-        partSearch = partSearch.strip()
-        #Discard the first line in partSearch to end up with just the searches
-        searchesOnly = partSearch.replace(partSearch.split('\r\n')[0], '').strip()
-        #print('\n',searchesOnly)
-
-        #TODO: extract into getSoloSearch function
-        #Split a list of the searchesOnly string
-        soloSearchList = searchesOnly.split('\n')
-        #TODO: extract into parseSoloSearch function
-        #Parse through soloSearchList by line
+        #TODO: extract into parseIndividualSearches function
+        #Parse through eachSearch by line
         print('\nPart Search:', part_num)
         counter = 1
-        for line in soloSearchList:
-            #if the line is an odd number (the first line in an individual search),
+        numSearchesPerPart = len(eachSearch)/2
+        print(numSearchesPerPart)
+        for line in eachSearch:
+            print(counter)
+            #If the line is an odd number (the first line in an individual search),
             #get the part searched and company named
             if (counter % 2 != 0):
-                #TODO: extract the following into getSearchedAndCompanyName function
-                regex = r'^.*?(?= Searched by:)'
-                part_searched = re.findall(regex, line, re.DOTALL)[0]
-                company_name = line.split(':')[1].strip()
+                part_searched = getPartSearched(line)
+                company_name = getCompanyName(line)
                 print('*Part searched: %s\n*CompanyName: %s' % (part_searched, company_name))
-
-            #else, if the number is even (second line of individual search),
+            #Else, if the number is even (second line of individual search),
             #get the name of the person
             elif (counter % 2 == 0):
-                #TODO: extract the following into getPersonName function
-                regex = r'^.*?(?= P:)'
-                person_name = re.findall(regex, line, re.DOTALL)[0].strip()
+                person_name = getPersonName(line)
                 print('*Person Name:',person_name, '\n')
-            #increment the counter
+            #Increment the counter
             counter += 1
+
+def getCompanyName(line):
+    return line.split(':')[1].strip()
+
+def getIndividualSearchesList(partSearchString):
+    #Get rid of blank lines in partSearch string
+    partSearchString = partSearchString.strip()
+    #Discard the first line in partSearch to end up with just the searches done
+    searchString = partSearchString.replace(partSearchString.split('\r\n')[0], '').strip()
+    #Split the searchString into a list and return it
+    return searchString.split('\n')
 
 def getPart(search):
     #Part = everything before first comma, formatted without returns and newlines
     return search.split(',')[0].replace('\r\n', '')
+
+def getPartSearched(line):
+    regex = r'^.*?(?= Searched by:)'
+    return re.findall(regex, line, re.DOTALL)[0]
+
+def getPersonName(line):
+    regex = r'^.*?(?= P:)'
+    return re.findall(regex, line, re.DOTALL)[0].strip()
 
 def getSearchInfo(body):
     #Use regex to get the main info block containing search info from the email body
