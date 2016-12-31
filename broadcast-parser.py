@@ -119,6 +119,7 @@ def parseMessage(msg, data):
     for partSearch in partSearches:
         #Get the part number for the part searched
         part_num = getPart(partSearch)
+        print(part_num)
         #Get a split list of each individual search done
         eachSearch = getIndividualSearchesList(partSearch)
 
