@@ -1,6 +1,6 @@
 #Description
 
-Parses emails received hourly and enters information from them into a database.
+Parses emails received hourly (or every 3 hours after business hours) and enters information from them into a database.
 
 ##Requirements
 
