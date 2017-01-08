@@ -9,9 +9,6 @@ import datetime
 from email.utils import parseaddr
 from connection import *
 
-#Create an IMAP4 instance pointing to gmail server
-M = imaplib.IMAP4_SSL('imap.gmail.com')
-
 def init():
     emailLogin(EMAIL_ACCOUNT, PASSWORD)
     selectMailbox(EMAIL_FOLDER)
@@ -252,6 +249,8 @@ def splitPartSearches(searchList):
 #initialize app
 while True:
     print('App Initialized... \n')
+    #Create an IMAP4 instance pointing to gmail server
+    M = imaplib.IMAP4_SSL('imap.gmail.com')
     #Initialize login and parsing
     init()
     #delete all emails in Inbox
@@ -260,7 +259,5 @@ while True:
     deleteAllEmails(EMAIL_FOLDER)
     #Log out of email account
     M.logout()
-    #re-initialize class to allow reconnect on next login
-    M = imaplib.IMAP4_SSL('imap.gmail.com')
     #Sleep for 1 hour or 3 hours, depending on current time
     time.sleep(determineSleepTime())
