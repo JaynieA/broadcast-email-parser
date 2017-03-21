@@ -1,8 +1,8 @@
-#Description
+# Description
 
 Parses emails received hourly (or every 3 hours after business hours) and enters information from them into a database.
 
-##Requirements
+## Requirements
 
 * Additional file named connection.py located in root folder, containing:
 
@@ -18,7 +18,7 @@ connStr = r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=yourDatabaseNa
 * Enable IMAP in Gmail settings
 * Allow access for less secure apps in Gmail settings
 
-##Technologies
+## Technologies
 
 * Python3
 * pyodbc
